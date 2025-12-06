@@ -22,12 +22,10 @@ def load_rsa_public_key(path: str) -> RSA.RsaKey:
     with open(path, "rb") as f:
         return RSA.import_key(f.read())
 
-def sender_main(sender_name: str,
-                receiver_name: str,
-                message_file: str,
-                output_file: str = "Transmitted_Data.json") -> None:
+
+def sender_main(message_file: str, output_file: str = "Transmitted_Data.json") -> None:
     # 1) Load receiver's public RSA key
-    receiver_pub_path = f"{receiver_name}_public.pem"
+    receiver_pub_path = "receiver_public.pem"
     receiver_pub = load_rsa_public_key(receiver_pub_path)
 
     # 2) Read plaintext message from file
@@ -53,11 +51,6 @@ def sender_main(sender_name: str,
 
     # 7) Pack everything into a JSON file (Base64 for binary data)
     packet = {
-        "sender": sender_name,
-        "receiver": receiver_name,
-        "rsa_scheme": "RSA-2048-OAEP",
-        "aes_mode": "AES-256-CBC",
-        "mac_algo": "HMAC-SHA256",
         "enc_key": b64e(enc_key),
         "iv": b64e(iv),
         "ciphertext": b64e(ciphertext),
@@ -71,14 +64,13 @@ def sender_main(sender_name: str,
 
 if __name__ == "__main__":
     # CLI usage:
-    #   python sender.py <sender_name> <receiver_name> <message_file> [output_file]
-    if len(sys.argv) < 4:
-        print("Usage: python sender.py <sender_name> <receiver_name> <message_file> [output_file]")
+    #   python sender.py <message_file> [output_file]
+    if len(sys.argv) < 2:
+        print("Usage: python sender.py <message_file> [output_file]")
         sys.exit(1)
 
-    sender_name = sys.argv[1]
-    receiver_name = sys.argv[2]
-    message_file = sys.argv[3]
-    out_file = sys.argv[4] if len(sys.argv) >= 5 else "Transmitted_Data.json"
+    
+    message_file = sys.argv[1]
+    out_file = sys.argv[2] if len(sys.argv) >= 3 else "Transmitted_Data.json"
 
-    sender_main(sender_name, receiver_name, message_file, out_file)
+    sender_main(message_file, out_file)

@@ -1,6 +1,7 @@
 # generate_keys.py
 from Crypto.PublicKey import RSA
 
+
 def generate_party_keys(name: str, bits: int = 2048) -> None:
     """
     Generate an RSA key pair for a party and save to disk as:
@@ -20,8 +21,9 @@ def generate_party_keys(name: str, bits: int = 2048) -> None:
 
     print(f"Generated RSA-{bits} key pair for {name}.")
 
+
 if __name__ == "__main__":
-    # You can change these names if you want different parties
-    generate_party_keys("alice")
-    generate_party_keys("bob")
+    # Generate generic sender/receiver key pairs
+    generate_party_keys("sender")
+    generate_party_keys("receiver")
     print("Done.")

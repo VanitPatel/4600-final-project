@@ -1,4 +1,3 @@
-# receiver.py
 import sys
 import json
 import base64
@@ -29,23 +28,18 @@ def load_rsa_private_key(path: str) -> RSA.RsaKey:
     with open(path, "rb") as f:
         return RSA.import_key(f.read())
 
+
 # ---------- main logic ----------
 
-def receiver_main(receiver_name: str,
-                  input_file: str = "Transmitted_Data.json",
+def receiver_main(input_file: str = "Transmitted_Data.json",
                   output_file: str = "decrypted_message.txt") -> None:
     # 1) Load receiver's private RSA key
-    receiver_priv_path = f"{receiver_name}_private.pem"
+    receiver_priv_path = "receiver_private.pem"
     receiver_priv = load_rsa_private_key(receiver_priv_path)
 
     # 2) Read the transmitted packet
     with open(input_file, "r", encoding="utf-8") as f:
         packet = json.load(f)
-
-    # Sanity: check that the packet is intended for this receiver
-    packet_receiver = packet.get("receiver")
-    if packet_receiver != receiver_name:
-        print(f"[Receiver] Warning: packet receiver is '{packet_receiver}', but I am '{receiver_name}'.")
 
     enc_key = b64d(packet["enc_key"])
     iv = b64d(packet["iv"])
@@ -80,14 +74,10 @@ def receiver_main(receiver_name: str,
     print(f"[Receiver] Decrypted message written to {output_file}")
 
 if __name__ == "__main__":
-    # CLI usage:
-    #   python receiver.py <receiver_name> [input_file] [output_file]
-    if len(sys.argv) < 2:
-        print("Usage: python receiver.py <receiver_name> [input_file] [output_file]")
-        sys.exit(1)
+    
+    
+    #   python receiver.py [input_file] [output_file]
+    in_file = sys.argv[1] if len(sys.argv) >= 2 else "Transmitted_Data.json"
+    out_file = sys.argv[2] if len(sys.argv) >= 3 else "decrypted_message.txt"
 
-    receiver_name = sys.argv[1]
-    in_file = sys.argv[2] if len(sys.argv) >= 3 else "Transmitted_Data.json"
-    out_file = sys.argv[3] if len(sys.argv) >= 4 else "decrypted_message.txt"
-
-    receiver_main(receiver_name, in_file, out_file)
+    receiver_main(in_file, out_file)
