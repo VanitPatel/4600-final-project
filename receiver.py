@@ -5,13 +5,14 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP, AES
 from Crypto.Hash import HMAC, SHA256
 
-# ---------- utility functions ----------
 
+    #Remove PKCS#7 padding from decrypted data.
 def unpad_pkcs7(data: bytes, block_size: int = 16) -> bytes:
     if not data:
         raise ValueError("Empty data, cannot unpad")
-
+    
     pad_len = data[-1]
+     # pad_len must be a valid number of padding bytes
     if pad_len < 1 or pad_len > block_size:
         raise ValueError("Invalid PKCS#7 padding")
 
@@ -22,6 +23,8 @@ def unpad_pkcs7(data: bytes, block_size: int = 16) -> bytes:
     return data[:-pad_len]
 
 def b64d(s: str) -> bytes:
+    #Base64-decode a string to raw bytes.
+    #JSON cannot store raw bytes directly, so sender encodes fields in base64.
     return base64.b64decode(s.encode("ascii"))
 
 def load_rsa_private_key(path: str) -> RSA.RsaKey:
@@ -29,22 +32,22 @@ def load_rsa_private_key(path: str) -> RSA.RsaKey:
         return RSA.import_key(f.read())
 
 
-# ---------- main logic ----------
 
 def receiver_main(input_file: str = "Transmitted_Data.json",
                   output_file: str = "decrypted_message.txt") -> None:
-    # 1) Load receiver's private RSA key
+    
+    # 1) Load receiver's private RSA key (long-term asymmetric key)
     receiver_priv_path = "receiver_private.pem"
     receiver_priv = load_rsa_private_key(receiver_priv_path)
 
-    # 2) Read the transmitted packet
+    # 2) Reads JSON packet (simulated "network" channel)
     with open(input_file, "r", encoding="utf-8") as f:
         packet = json.load(f)
 
-    enc_key = b64d(packet["enc_key"])
-    iv = b64d(packet["iv"])
-    ciphertext = b64d(packet["ciphertext"])
-    mac_tag = b64d(packet["mac"])
+    enc_key = b64d(packet["enc_key"])           # RSA-encrypted AES key (bytes)
+    iv = b64d(packet["iv"])                     # AES-CBC IV (16 bytes)
+    ciphertext = b64d(packet["ciphertext"])     # AES-CBC ciphertext (multiple of 16 bytes)
+    mac_tag = b64d(packet["mac"])               # HMAC-SHA256 tag (32 bytes)
 
     # 3) RSA decrypt the AES key
     cipher_rsa = PKCS1_OAEP.new(receiver_priv)

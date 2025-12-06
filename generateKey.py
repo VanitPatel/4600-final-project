@@ -4,18 +4,18 @@ from Crypto.PublicKey import RSA
 
 def generate_party_keys(name: str, bits: int = 2048) -> None:
     """
-    Generate an RSA key pair for a party and save to disk as:
-        {name}_private.pem
-        {name}_public.pem
+    Generate an RSA key pair for the sender and receiver
     """
     key = RSA.generate(bits)
 
     private_pem = key.export_key()
     public_pem = key.publickey().export_key()
 
+    # Save the private key to disk
     with open(f"{name}_private.pem", "wb") as f:
         f.write(private_pem)
 
+    # Save the public key to disk
     with open(f"{name}_public.pem", "wb") as f:
         f.write(public_pem)
 

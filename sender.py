@@ -7,16 +7,17 @@ from Crypto.Cipher import PKCS1_OAEP, AES
 from Crypto.Random import get_random_bytes
 from Crypto.Hash import HMAC, SHA256
 
-# ---------- utility functions ----------
-
+#    Apply PKCS#7 padding to data so that its length is a multiple of block_size.
+#   Let pad_len = block_size - (len(data) % block_size)
 def pad_pkcs7(data: bytes, block_size: int = 16) -> bytes:
     pad_len = block_size - (len(data) % block_size)
     return data + bytes([pad_len]) * pad_len
 
 def b64e(b: bytes) -> str:
+    #Base64-encode raw bytes and return a UTF-8/ASCII string.
     return base64.b64encode(b).decode("ascii")
 
-# ---------- main logic ----------
+
 
 def load_rsa_public_key(path: str) -> RSA.RsaKey:
     with open(path, "rb") as f:
